@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const cheerio = require('cheerio');
-const request = require('request');
+const axios = require('axios');
 
 const mongoose = require('mongoose');
 
@@ -19,18 +19,48 @@ let Articles = mongoose.model('Article', articleSchema);
 
 router.get('/', function (req, res, next) {
     let $;
-    request('https://www.reddit.com/r/nottheonion/', function (error, result, html) {
-        if (!error && result.statusCode === 200) {
+
+    axios('https://www.reddit.com/r/nottheonion/').then(response => {
+        return response.data
+    }).then(html => {
+        $ = cheerio.load(html);
+
+        $('p.title>a').slice(1).each(function (index, element) {
+            let text = $(this).text().replace(/(\w)[\w']*/g, function (txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+            console.log(text);
+            Articles.findOneAndUpdate({
+                title: text
+            }, {
+                title: text,
+                onion: false
+            }, {
+                upsert: true,
+                new: true
+            }, function (error, doc) {
+                if (error) {
+                    console.log(error)
+                }
+            });
+        });
+
+        axios('https://www.reddit.com/r/theonion/').then(response => {
+            return response.data;
+        }).then(html => {
+
             $ = cheerio.load(html);
 
-            $('p.title>a').slice(1).each(function (index, element) {
-                let text =$(this).text().replace(/(\w)[\w']*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-                console.log(text);
+            let text = $(this).text().replace(/(\w)[\w']*/g, function (txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+
+            $('p.title>a').each(function (index, element) {
                 Articles.findOneAndUpdate({
                     title: text
                 }, {
                     title: text,
-                    onion: false
+                    onion: true
                 }, {
                     upsert: true,
                     new: true
@@ -40,32 +70,9 @@ router.get('/', function (req, res, next) {
                     }
                 });
             });
+            next();
 
-            request('https://www.reddit.com/r/theonion/', function (error, result, html) {
-                if (!error && result.statusCode === 200) {
-                    $ = cheerio.load(html);
-
-                    let text = $(this).text().replace(/(\w)[\w']*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-
-                    $('p.title>a').each(function (index, element) {
-                        Articles.findOneAndUpdate({
-                            title: text
-                        }, {
-                            title: text,
-                            onion: true
-                        }, {
-                            upsert: true,
-                            new: true
-                        }, function (error, doc) {
-                            if (error) {
-                                console.log(error)
-                            }
-                        });
-                    });
-                    next();
-                }
-            });
-        }
+        });
     });
 });
 
@@ -83,7 +90,7 @@ router.get('/', function (req, res) {
 });
 
 
-router.post('/delete/:id', function(req, res){
+router.post('/delete/:id', function (req, res) {
     Articles.findOneAndUpdate({
             _id: req.params.id
         }, {
@@ -100,19 +107,19 @@ router.post('/delete/:id', function(req, res){
         })
 });
 
-router.post('/check/:id', function(req, res){
+router.post('/check/:id', function (req, res) {
     Articles.findOne({
             _id: req.params.id
         },
         function (err, response) {
             console.log(response);
             let text;
-            if(response.onion === true){
+            if (response.onion === true) {
                 text = "This is from The Onion!"
             } else {
                 text = "This is from Not The Onion!"
             }
-            if(response.onion.toString() === req.body.check){
+            if (response.onion.toString() === req.body.check) {
                 res.send(`Correct! ${text}`);
             } else {
                 res.send(`Incorrect! ${text}`);

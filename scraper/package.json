@@ -10,9 +10,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "heroku-postbuild": "cd scraper && npm install --only=dev && npm install && npm run build",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
-  "proxy": "http://localhost:3001"
+  "proxy": "http://localhost:5000"
 }

@@ -29,7 +29,7 @@ router.get('/', function (req, res, next) {
             let text = $(this).text().replace(/(\w)[\w']*/g, function (txt) {
                 return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
             });
-            console.log(text);
+            //console.log(text);
             Articles.findOneAndUpdate({
                 title: text
             }, {
@@ -45,17 +45,20 @@ router.get('/', function (req, res, next) {
             });
         });
 
-        axios('https://www.reddit.com/r/theonion/').then(response => {
+        axios('https://www.reddit.com/r/TheOnion/').then(response => {
             return response.data;
         }).then(html => {
 
             $ = cheerio.load(html);
 
-            let text = $(this).text().replace(/(\w)[\w']*/g, function (txt) {
-                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-            });
-
             $('p.title>a').each(function (index, element) {
+
+                let text = $(this).text().replace(/(\w)[\w']*/g, function (txt) {
+                    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                });
+
+                console.log(text);
+
                 Articles.findOneAndUpdate({
                     title: text
                 }, {
@@ -77,7 +80,7 @@ router.get('/', function (req, res, next) {
 });
 
 router.get('/', function (req, res) {
-    Articles.find({}, {limit: 100}, function (err, articles) {
+    Articles.find({}, null, {limit: 100}, function (err, articles) {
         if (err) {
             console.log(err)
         }

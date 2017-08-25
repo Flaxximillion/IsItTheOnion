@@ -77,7 +77,7 @@ router.get('/', function (req, res, next) {
 });
 
 router.get('/', function (req, res) {
-    Articles.find({}, {onion: false}, {limit: 100}, function (err, articles) {
+    Articles.find({}, {limit: 100}, function (err, articles) {
         if (err) {
             console.log(err)
         }

@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import './App.css';
+const classNames = require('classnames');
 
 class App extends Component {
     state = {
@@ -17,7 +18,7 @@ class App extends Component {
 
     render() {
         return (
-            <div className="App">
+            <div className="container">
                 <h1>
                     Articles
                 </h1>
@@ -67,6 +68,7 @@ class Article extends Component {
             return res.json();
         }).then(article => {
             this.setState({article: article});
+            this.textInput.value = "";
         })
     }
 
@@ -91,13 +93,11 @@ class Article extends Component {
         return (
             <li className="article">
                 <h5>{this.state.article.title}</h5>
-                <div>
-                    <div>{this.state.guess}</div>
-                    <button onClick={this.handleGuess} value="true">
-                        Is Onion
+                <div className="isOnion">
+                    <div className="guess">{this.state.guess}</div>
+                    <button className={["button", "tick"].join(' ')} onClick={this.handleGuess} value="true">
                     </button>
-                    <button onClick={this.handleGuess} value="false">
-                        Not Onion
+                    <button className={["button", "cross"].join(' ')} onClick={this.handleGuess} value="false">
                     </button>
                 </div>
                 {this.state.article.comments.map(comment =>

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const cheerio = require('cheerio');
 const axios = require('axios');
+const toTitleCase = require('ap-style-title-case');
 
 const mongoose = require('mongoose');
 
@@ -25,11 +26,8 @@ router.get('/', function (req, res, next) {
     }).then(html => {
         $ = cheerio.load(html);
 
-        $('p.title>a').slice(1).each(function (index, element) {
-            let text = $(this).text().replace(/(\w)[\w']*/g, function (txt) {
-                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-            });
-            //console.log(text);
+        $('p.title>a.title').each(function (index, element) {
+            let text = toTitleCase($(this).text());
             Articles.findOneAndUpdate({
                 title: text
             }, {
@@ -51,18 +49,16 @@ router.get('/', function (req, res, next) {
 
             $ = cheerio.load(html);
 
-            $('p.title>a').each(function (index, element) {
+            $('p.title>a.title').each(function (index, element) {
 
-                let text = $(this).text().replace(/(\w)[\w']*/g, function (txt) {
-                    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-                });
+                let text2 = toTitleCase($(this).text());
 
-                console.log(text);
+                console.log(text2);
 
                 Articles.findOneAndUpdate({
-                    title: text
+                    title: text2
                 }, {
-                    title: text,
+                    title: text2,
                     onion: true
                 }, {
                     upsert: true,
